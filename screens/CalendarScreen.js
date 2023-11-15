@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, Button, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -63,39 +63,71 @@ const CalendarScreen = () => {
   const handleSaveWorkoutDetail = () => {
     const newWorkouts = {
       ...workouts,
-      [selectedDate]: {
-        ...workouts[selectedDate],
-        [workoutType]: { name: selectedWorkout, sets, reps },
-      },
+      // 날짜 키에 대해 기존의 운동 배열에 새 운동 정보를 추가합니다.
+      [selectedDate]: [
+        ...(workouts[selectedDate] || []), // 기존의 운동 배열을 유지하거나 새 배열을 생성합니다.
+        { type: workoutType, name: selectedWorkout, sets, reps }
+      ],
     };
     // 새로운 운동 정보를 AsyncStorage에 저장합니다.
     storeData(newWorkouts);
     setWorkouts(newWorkouts);
+    // 모달을 닫고 상태를 초기화합니다.
     setModalVisible(false);
-    // 운동 유형, 선택된 운동, 세트, 횟수를 초기화합니다.
     setWorkoutType(null);
     setSelectedWorkout(null);
     setSets('');
     setReps('');
   };
 
+  // 운동 항목을 삭제하는 함수입니다.
+  const confirmDeleteWorkout = (dateString, index) => {
+    Alert.alert(
+      "운동 삭제", 
+      "이 운동을 삭제하시겠습니까?", 
+     [
+        {
+          text: "취소",
+          style: "cancel"
+        },
+        { 
+          text: "삭제", 
+          onPress: () => deleteWorkout(dateString, index)
+        }
+      ]
+    );
+  };
+
+  // 운동을 삭제하는 함수입니다.
+  const deleteWorkout = (dateString, index) => {
+    const updatedWorkouts = { ...workouts };
+    if (updatedWorkouts[dateString]) {
+      updatedWorkouts[dateString].splice(index, 1); // 특정 인덱스의 운동 정보를 삭제합니다.
+      setWorkouts(updatedWorkouts);
+      storeData(updatedWorkouts); // 변경 사항을 저장합니다.
+    }
+  };
+
   // 날짜에 해당하는 운동 정보를 렌더링합니다.
   // 저장된 운동 정보가 있으면 모든 운동 유형과 세트, 횟수를 문자열로 반환합니다.
   const renderWorkoutInfo = (date) => {
     const dateString = date.toISOString().split('T')[0];
-    const workoutData = workouts[dateString];
-    let workoutInfo = '';
+    const dailyWorkouts = workouts[dateString];
+    let workoutInfoElements = [];
   
-    if (workoutData) {
-      Object.keys(workoutTypes).forEach((type) => {
-        if (workoutData[type]) {
-          const { name, sets, reps } = workoutData[type];
-          workoutInfo += `${type}: ${name}, 세트: ${sets}, 횟수: ${reps}\n`;
-        }
-      });
+    if (dailyWorkouts && dailyWorkouts.length > 0) {
+      workoutInfoElements = dailyWorkouts.map((workout, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.workoutItem}
+          onPress={() => confirmDeleteWorkout(dateString, index)} // 터치 시 confirmDeleteWorkout 호출
+        >
+          <Text style={styles.workoutText}>{`${workout.type}: ${workout.name}, 세트: ${workout.sets}, 횟수: ${workout.reps}`}</Text>
+        </TouchableOpacity>
+      ));
     }
   
-    return workoutInfo || '운동 계획 없음';
+    return workoutInfoElements.length > 0 ? workoutInfoElements : <Text style={styles.workoutContent}>운동 계획 없음</Text>;
   };
 
   // 운동 유형 버튼을 클릭했을 때 호출되는 함수입니다.
@@ -106,6 +138,12 @@ const CalendarScreen = () => {
   // 특정 운동을 클릭했을 때 호출되는 함수입니다.
   const handleWorkoutPress = (workout) => {
     setSelectedWorkout(workout);
+  };
+
+  // 운동 유형 선택을 취소하는 함수입니다.
+  const handleCancelWorkoutType = () => {
+    setWorkoutType(null);
+    setModalVisible(false); // 모달 창을 닫습니다.
   };
 
   // 컴포넌트 렌더링 부분입니다.
@@ -124,9 +162,7 @@ const CalendarScreen = () => {
         animationType="slide"
         transparent={true}
         visible={isModalVisible}
-        onRequestClose={() => {
-          setModalVisible(!isModalVisible);
-        }}
+        onRequestClose={handleCancelWorkoutType} // Android 뒤로 가기 버튼을 위한 핸들러
       >
         <View style={styles.modalView}>
           {/* 운동 유형을 선택하는 부분입니다. */}
@@ -139,6 +175,7 @@ const CalendarScreen = () => {
                   onPress={() => handleWorkoutTypePress(type)}
                 >
                   <Text style={styles.buttonText}>{type}</Text>
+                  <Button title="취소" onPress={handleCancelWorkoutType} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -196,7 +233,7 @@ const CalendarScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f2', // 배경색을 조금 더 은은한 색으로 변경
+    backgroundColor: '#f2f2f2',
   },
   modalView: {
     margin: 20,
@@ -217,14 +254,14 @@ const styles = StyleSheet.create({
     height: 40,
     margin: 12,
     borderWidth: 1,
-    borderColor: '#ced4da', // 테두리 색상 변경
+    borderColor: '#ced4da',
     padding: 10,
     width: '80%',
-    backgroundColor: '#ffffff' // 배경색 추가
+    backgroundColor: '#ffffff'
   },
   workoutInfo: {
     padding: 20,
-    backgroundColor: '#ffffff', // 백그라운드 색상 추가
+    backgroundColor: '#ffffff',
     margin: 10,
     borderRadius: 10,
     shadowColor: "#000",
@@ -238,24 +275,24 @@ const styles = StyleSheet.create({
   },
   workoutTitle: {
     fontWeight: 'bold',
-    fontSize: 18, // 폰트 사이즈 변경
-    marginBottom: 5, // 마진 추가
-    color: '#333333' // 색상 변경
+    fontSize: 18,
+    marginBottom: 5, 
+    color: '#333333'
   },
   workoutContent: {
-    fontSize: 16, // 폰트 사이즈 변경
-    color: '#555555' // 색상 변경
+    fontSize: 16, 
+    color: '#555555' 
   },
   button: {
-    backgroundColor: '#1e90ff', // 버튼 배경색 변경
+    backgroundColor: '#1e90ff',
     padding: 10,
     borderRadius: 5,
     margin: 5,
   },
   buttonText: {
-    color: 'white', // 버튼 텍스트 색상 변경
-    fontSize: 16, // 폰트 사이즈 변경
-    textAlign: 'center', // 텍스트 정렬 변경
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 
