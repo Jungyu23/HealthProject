@@ -164,8 +164,8 @@ const CalendarScreen = () => {
         visible={isModalVisible}
         onRequestClose={handleCancelWorkoutType} // Android 뒤로 가기 버튼을 위한 핸들러
       >
+        {/* 운동 유형을 선택하는 부분입니다. */}
         <View style={styles.modalView}>
-          {/* 운동 유형을 선택하는 부분입니다. */}
           {workoutType === null && (
             <View>
               {Object.keys(workoutTypes).map((type) => (
@@ -175,11 +175,12 @@ const CalendarScreen = () => {
                   onPress={() => handleWorkoutTypePress(type)}
                 >
                   <Text style={styles.buttonText}>{type}</Text>
-                  <Button title="취소" onPress={handleCancelWorkoutType} />
                 </TouchableOpacity>
               ))}
+              <Button title="취소" onPress={handleCancelWorkoutType} />
             </View>
           )}
+
           {/* 선택한 운동 유형에 따라 운동 목록을 표시합니다. */}
           {workoutType !== null && selectedWorkout === null && (
             <View>
@@ -195,6 +196,7 @@ const CalendarScreen = () => {
               <Button title="뒤로" onPress={() => setWorkoutType(null)} />
             </View>
           )}
+
           {/* 운동의 세트와 횟수를 입력하는 부분입니다. */}
           {selectedWorkout !== null && (
             <View>
@@ -218,6 +220,7 @@ const CalendarScreen = () => {
           )}
         </View>
       </Modal>
+
       {/* 오늘과 내일의 운동 정보를 표시합니다. */}
       <View style={styles.workoutInfo}>
         <Text style={styles.workoutTitle}>오늘의 운동</Text>
