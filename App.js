@@ -18,7 +18,7 @@ function App() {
             // 현재 경로에 따라 아이콘을 설정합니다.
             if (route.name === 'Calendar') {
               iconName = focused ? 'calendar' : 'calendar-outline';
-            } else if (route.name === 'Test') {
+            } else if (route.name === 'catting') {
               iconName = focused ? 'flask' : 'flask-outline'; // 정확한 아이콘 이름을 사용해야 합니다.
             }
 
