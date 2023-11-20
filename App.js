@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CalendarScreen from './screens/CalendarScreen';
-import TestScreen from './screens/TestScreen';
+import ChattingScreen from './screens/ChattingScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,7 +30,7 @@ function App() {
         })}
       >
         <Tab.Screen name="Calendar" component={CalendarScreen} />
-        <Tab.Screen name="Test" component={TestScreen} />
+        <Tab.Screen name="Chatting" component={ChattingScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
