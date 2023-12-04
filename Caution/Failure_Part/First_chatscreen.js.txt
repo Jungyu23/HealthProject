@@ -1,0 +1,1237 @@
+import React, { useState } from 'react';
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  FlatList,
+  SafeAreaView,
+} from 'react-native';
+import axios from 'axios';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const { transcript, resetTranscript } = useSpeechRecognition();
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (transcript) {
+      userMessage = { text: transcript, isUser: true };
+      resetTranscript();
+    } else if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if both input and transcript are empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <SpeechRecognitionComponent />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+
+ ERROR  ReferenceError: Property 'SpeechRecognitionComponent' doesn't exist
+ 에러 발견
+
+ ================순천향대병원 치료중에도 코딩 생각 ======================
+ import React, { useState } from 'react';
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  FlatList,
+  SafeAreaView,
+} from 'react-native';
+import axios from 'axios';
+import { useSpeechRecognition } from 'react-speech-recognition';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const { transcript, resetTranscript, startListening, stopListening } = useSpeechRecognition();
+
+  const handleStartListening = () => {
+    startListening();
+  };
+
+  const handleStopListening = () => {
+    stopListening();
+  };
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (transcript) {
+      userMessage = { text: transcript, isUser: true };
+      resetTranscript();
+    } else if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if both input and transcript are empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {transcript ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={handleStartListening} />
+        <Button title="Stop" onPress={handleStopListening} />
+        <Button title="Reset" onPress={resetTranscript} />
+        <Text>Transcript: {transcript}</Text>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+ ERROR  TypeError: startListening is not a function (it is undefined), js engine: hermes
+ 반복된 오류
+
+ expo install expo-speech
+재설치 후 
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import * as Speech from 'expo-speech';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = async () => {
+    try {
+      await Speech.startListeningAsync();
+      setIsListening(true);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      await Speech.stopListeningAsync();
+      setIsListening(false);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  useEffect(() => {
+    Speech.addListener(({ transcription }) => {
+      if (transcription) {
+        setInputText(transcription);
+      }
+    });
+
+    return () => {
+      Speech.removeAllListeners();
+    };
+  }, []);
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={startListening} />
+        <Button title="Stop" onPress={stopListening} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+코드 재작성
+
+ ERROR  TypeError: Speech.addListener is not a function (it is undefined)
+ 짜증나는 오류
+
+ import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import * as SpeechRecognition from 'expo-speech-recognition';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = async () => {
+    try {
+      await SpeechRecognition.requestPermissionsAsync();
+      await SpeechRecognition.startListeningAsync();
+      setIsListening(true);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      await SpeechRecognition.stopListeningAsync();
+      setIsListening(false);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  useEffect(() => {
+    const recognitionHandler = (result) => {
+      if (result.reason === SpeechRecognition.EndEvent) {
+        setIsListening(false);
+      } else {
+        setInputText(result.transcription);
+      }
+    };
+
+    SpeechRecognition.addEventListener('didStopRecording', recognitionHandler);
+
+    return () => {
+      SpeechRecognition.removeAllListeners();
+    };
+  }, []);
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={startListening} />
+        <Button title="Stop" onPress={stopListening} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+롤백 후 재 작성
+
+Error: Unable to resolve module expo-speech-recognition from /Users/kimminsoo/Documents/Mobile/4/team/HealthProject/screens/ChattingScreen.js: expo-speech-recognition could not be found within the project or in these directories:
+  node_modules
+  ../node_modules
+  2 | import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+  3 | import axios from 'axios';
+> 4 | import * as SpeechRecognition from 'expo-speech-recognition';
+
+전보다 심한 오류들 발생
+
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import * as Speech from 'expo-speech';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = async () => {
+    try {
+      await Speech.requestPermissionsAsync();
+      await Speech.startListeningAsync();
+      setIsListening(true);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      await Speech.stopListeningAsync();
+      setIsListening(false);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  useEffect(() => {
+    const recognitionHandler = (result) => {
+      if (result.reason === Speech.RecognitionStatus.Finalized) {
+        setInputText(result.transcription);
+      }
+    };
+
+    Speech.addListener(recognitionHandler);
+
+    return () => {
+      Speech.removeAllListeners();
+    };
+  }, []);
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={startListening} />
+        <Button title="Stop" onPress={stopListening} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+롤백 후 재작성
+
+
+초기화 후 라이브러리 설치 후 재작성
+expo install expo-speech
+
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import * as Speech from 'expo-speech';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = async () => {
+    try {
+      await Speech.requestPermissionsAsync();
+      setIsListening(true);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      setIsListening(false);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  const handleSpeechRecognition = async () => {
+    startListening();
+  };
+
+  useEffect(() => {
+    const recognitionHandler = (result) => {
+      if (result.reason === Speech.RecognitionStatus.Finalized) {
+        setInputText(result.transcription);
+      }
+    };
+
+    Speech.addListener(recognitionHandler);
+
+    return () => {
+      Speech.removeAllListeners();
+    };
+  }, []);
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={handleSpeechRecognition} />
+        <Button title="Stop" onPress={stopListening} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+ ERROR  TypeError: Speech.addListener is not a function (it is undefined)
+
+ 실제로 졸도하게 만들어주는 오류들
+ GPT요청
+ import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import * as Speech from 'expo-speech';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = async () => {
+    try {
+      await Speech.requestPermissionsAsync();
+      setIsListening(true);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      await Speech.stopSpeakingAsync(); // Use stopSpeakingAsync to stop listening
+      setIsListening(false);
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+    }
+  };
+
+  const handleSpeechRecognition = async () => {
+    startListening();
+  };
+
+  useEffect(() => {
+    const recognitionHandler = (result) => {
+      if (result.reason === Speech.RecognitionStatus.Finalized) {
+        setInputText(result.transcription);
+      }
+    };
+
+    Speech.addListener(recognitionHandler);
+
+    return () => {
+      Speech.removeAllListeners();
+    };
+  }, []);
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={handleSpeechRecognition} />
+        <Button title="Stop" onPress={stopListening} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+ERROR  TypeError: Speech.addListener is not a function (it is undefined)
+
+This error is located at:
+    in ChattingScreen (created by SceneView)
+    in StaticContainer
+    in EnsureSingleNavigator (created by SceneView)
+    in SceneView (created by BottomTabView)
+    in RCTView (created by View)
+    in View (created by Screen)
+    in RCTView (created by View)
+    in View (created by Background)
+    in Background (created by Screen)
+    in Screen (created by BottomTabView)
+    in RNSScreen
+    in Unknown (created by InnerScreen)
+    in Suspender (created by Freeze)
+    in Suspense (created by Freeze)
+    in Freeze (created by DelayedFreeze)
+    in DelayedFreeze (created by InnerScreen)
+    in InnerScreen (created by Screen)
+    in Screen (created by MaybeScreen)
+    in MaybeScreen (created by BottomTabView)
+    in RNSScreenNavigationContainer (created by ScreenContainer)
+    in ScreenContainer (created by MaybeScreenContainer)
+    in MaybeScreenContainer (created by BottomTabView)
+    in RNCSafeAreaProvider (created by SafeAreaProvider)
+    in SafeAreaProvider (created by SafeAreaInsetsContext)
+    in SafeAreaProviderCompat (created by BottomTabView)
+    in BottomTabView (created by BottomTabNavigator)
+    in PreventRemoveProvider (created by NavigationContent)
+    in NavigationContent
+    in Unknown (created by BottomTabNavigator)
+    in BottomTabNavigator (created by App)
+    in EnsureSingleNavigator
+    in BaseNavigationContainer
+    in ThemeProvider
+    in NavigationContainerInner (created by App)
+    in App (created by withDevTools(App))
+    in withDevTools(App)
+    in RCTView (created by View)
+    in View (created by AppContainer)
+    in RCTView (created by View)
+    in View (created by AppContainer)
+    in AppContainer
+    in main(RootComponent), js engine: hermes
+
+GPT도 해결 못하는 오류들
+
+웹뷰어 구현
+expo install react-native-webview
+
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import { WebView } from 'react-native-webview';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  const handleSpeechRecognition = () => {
+    setIsListening(true);
+  };
+
+  const stopListening = () => {
+    setIsListening(false);
+  };
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.nativeEvent.data) {
+        setInputText(event.nativeEvent.data);
+      }
+    };
+
+    return () => {
+      setIsListening(false);
+    };
+  }, []);
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={handleSpeechRecognition} />
+        <Button title="Stop" onPress={stopListening} />
+        <WebView
+          source={{ html: '<html><body></body></html>' }}
+          onMessage={handleMessage}
+          style={{ display: 'none' }}
+        />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import { WebView } from 'react-native-webview';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  const handleMessage = (event) => {
+    if (event.nativeEvent.data) {
+      setInputText(event.nativeEvent.data);
+    }
+  };
+
+  const handleSpeechRecognition = () => {
+    setIsListening(true);
+  };
+
+  const stopListening = () => {
+    setIsListening(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      setIsListening(false);
+    };
+  }, []);
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+        <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+        <Button title="Start" onPress={handleSpeechRecognition} />
+        <Button title="Stop" onPress={stopListening} />
+        <WebView
+          source={{ html: '<html><body></body></html>' }}
+          onMessage={handleMessage}
+          style={{ display: 'none' }}
+        />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+오류날까봐 싹 초기화 후 재작성
+expo install @react-native-community/voice
+
+// SpeechToText.js
+import React, { useState, useEffect } from 'react';
+import { PermissionsAndroid, Platform, View, Text, Button } from 'react-native';
+import Voice from '@react-native-community/voice';
+
+const SpeechToText = ({ onSpeechRecognized }) => {
+  const [isListening, setIsListening] = useState(false);
+  const [recognizedText, setRecognizedText] = useState('');
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+            {
+              title: 'Microphone Permission',
+              message: 'App needs access to your microphone to recognize speech.',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            }
+          );
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            startSpeechRecognition();
+          } else {
+            console.log('Microphone permission denied');
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        startSpeechRecognition();
+      }
+    };
+
+    checkPermissions();
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const startSpeechRecognition = async () => {
+    try {
+      await Voice.start('en-US');
+      setIsListening(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const stopSpeechRecognition = async () => {
+    try {
+      await Voice.stop();
+      setIsListening(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const onSpeechResults = (e) => {
+    setRecognizedText(e.value[0]);
+    onSpeechRecognized(e.value[0]);
+  };
+
+  Voice.onSpeechResults = onSpeechResults;
+
+  return (
+    <View>
+      <Text>Microphone: {isListening ? 'on' : 'off'}</Text>
+      <Button title="Start" onPress={startSpeechRecognition} disabled={isListening} />
+      <Button title="Stop" onPress={stopSpeechRecognition} disabled={!isListening} />
+      <Text>Recognized Text: {recognizedText}</Text>
+    </View>
+  );
+};
+
+export default SpeechToText;
+
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import SpeechToText from './SpeechToText';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = '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'; // Replace with your actual OpenAI API key
+
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
+
+  const onSpeechRecognized = (recognizedText) => {
+    setInputText(recognizedText);
+  };
+
+  const sendMessageToGPT = async () => {
+    let userMessage;
+
+    if (inputText.trim()) {
+      userMessage = { text: inputText, isUser: true };
+      setInputText('');
+    } else {
+      return; // Do nothing if input is empty
+    }
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: userMessage.text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+    } catch (error) {
+      console.error('OpenAI API call error:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <SpeechToText onSpeechRecognized={onSpeechRecognized} />
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Enter your message"
+          />
+          <Button title="Send" onPress={sendMessageToGPT} />
+        </KeyboardAvoidingView>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... (your existing styles)
+});
+
+export default ChattingScreen;
+
+ERROR  Invariant Violation: Your JavaScript code tried to access a native module that doesn't exist. 
+
+If you're trying to use a module that is not supported in Expo Go, you need to create a development build of your app. See https://docs.expo.dev/development/introduction/ for more info., js engine: hermes
+ ERROR  Invariant Violation: "main" has not been registered. This can happen if:
+* Metro (the local dev server) is run from the wrong folder. Check if Metro is running, stop it and restart it in the current project.
+* A module failed to load due to an error and `AppRegistry.registerComponent` wasn't called., js engine: hermes
+알수 없는 오류들
+
+재작성
+expo start --no-dev --minify
+expo install @react-native-community/voice
+
+위 방법으로 해도 의미 없어서 이준규 팀원한테 GPT자료 주고 다른 고안을 모색함.

@@ -1,0 +1,320 @@
+=================
+테스트용으로 구현
+=================
+expo install expo-speech expo-av
+
+import React, { useState } from 'react';
+import { Button, Text, View } from 'react-native';
+import { Audio } from 'expo-av';
+
+export default function App() {
+  const [recording, setRecording] = useState();
+  const [text, setText] = useState('');
+
+  async function startRecording() {
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      }); 
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+      );
+      setRecording(recording);
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
+  }
+
+  async function stopRecording() {
+    setRecording(undefined);
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI(); 
+    // 여기서 uri를 사용하여 외부 API에 전송하고 음성을 텍스트로 변환할 수 있습니다.
+    // 예: Google Cloud Speech-to-Text API
+  }
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Button title={recording ? 'Stop Recording' : 'Start Recording'} onPress={recording ? stopRecording : startRecording} />
+      {text ? <Text>{text}</Text> : null}
+    </View>
+  );
+}
+
+import React, { useState } from 'react';
+import { Button, Text, View } from 'react-native';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+
+export default function App() {
+  const [recording, setRecording] = useState();
+  const [text, setText] = useState('');
+
+  async function startRecording() {
+    // ... 기존 녹음 시작 로직 ...
+  }
+
+  async function stopRecording() {
+    setRecording(undefined);
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI(); 
+    transcribeAudio(uri);
+  }
+
+  async function transcribeAudio(uri) {
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      const fileUri = fileInfo.uri;
+
+      // 오디오 파일을 base64 인코딩으로 변환
+      const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: 'base64' });
+
+      // Google Cloud Speech-to-Text API에 요청 보내기
+      const response = await fetch('https://speech.googleapis.com/v1/speech:recognize?key=YOUR_API_KEY', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          config: {
+            encoding: 'LINEAR16',
+            languageCode: 'en-US',
+          },
+          audio: {
+            content: base64,
+          },
+        }),
+      });
+
+      const responseJson = await response.json();
+      setText(responseJson.results[0].alternatives[0].transcript);
+    } catch (error) {
+      console.error('Error during transcription', error);
+    }
+  }
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Button title={recording ? 'Stop Recording' : 'Start Recording'} onPress={recording ? stopRecording : startRecording} />
+      {text ? <Text>{text}</Text> : null}
+    </View>
+  );
+}
+
+
+오류 발생
+백업 후 다시 재작성
+npm install react-native-webview
+웹뷰어 설치
+import React from 'react';
+import { WebView } from 'react-native-webview';
+
+const SpeechToTextWebView = () => {
+  const htmlContent = `
+    <html>
+    <body>
+      <script>
+        var recognition = new webkitSpeechRecognition();
+        recognition.onresult = function(event) {
+          document.getElementById("result").innerText = event.results[0][0].transcript;
+        }
+        recognition.start();
+      </script>
+      <div id="result">Speak now...</div>
+    </body>
+    </html>
+  `;
+
+  return (
+    <WebView
+      originWhitelist={['*']}
+      source={{ html: htmlContent }}
+    />
+  );
+};
+
+export default SpeechToTextWebView;
+
+TTS로 변경 후 재 작성
+
+
+import * as Speech from 'expo-speech';
+
+const speak = () => {
+  const text = 'Hello, how are you?';
+  Speech.speak(text, {
+    language: 'en-US',  // or another language
+    pitch: 1.0,         // change the pitch
+    rate: 1.0,          // change the speed
+  });
+};
+
+import React from 'react';
+import { Button, View } from 'react-native';
+
+export default function App() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Button title="Speak" onPress={speak} />
+    </View>
+  );
+}
+
+GPT가 작성해준 코드 :
+import * as Speech from 'expo-speech';
+
+// ... 기존 코드 ...
+
+const sendMessageToGPT = async () => {
+  // ... 기존 메시지 전송 로직 ...
+
+  try {
+    // ... OpenAI API 호출 ...
+
+    const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+    setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+
+    // TTS로 응답 음성 재생
+    Speech.speak(botMessage.text, {
+      language: 'en-US', // 혹은 사용자의 언어에 맞춰 설정
+      pitch: 1.0,
+      rate: 1.0,
+    });
+  } catch (error) {
+    console.error('OpenAI API 호출 오류:', error);
+  }
+
+  setInputText('');
+};
+
+// ... 기존 코드 ...
+
+=======================
+// ... 기존 import 문 ...
+
+const ChattingScreen = () => {
+  // ... 기존 상태 및 함수 ...
+
+  const readLastMessage = () => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1].text;
+      Speech.speak(lastMessage, {
+        language: 'en-US', // 혹은 사용자의 언어에 맞춰 설정
+        pitch: 1.0,
+        rate: 1.0,
+      });
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        {/* ... 기존 FlatList 및 TextInput ... */}
+        <Button title="전송" onPress={sendMessageToGPT} />
+        <Button title="마지막 메시지 읽기" onPress={readLastMessage} />
+        {/* ... 기타 컴포넌트 ... */}
+      </View>
+    </SafeAreaView>
+  );
+};
+
+// ... 기존 스타일 시트 ...
+
+export default ChattingScreen;
+
+
+참고하여 만든 결과물
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import * as Speech from 'expo-speech';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = 'YOUR_API_KEY'; // 여기에 실제 API 키를 입력하세요
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+
+  const sendMessageToGPT = async () => {
+    if (!inputText.trim()) return;
+
+    const userMessage = { text: inputText, isUser: true };
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: inputText,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { 'Authorization': `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+      Speech.speak(botMessage.text, {
+        language: 'en-US',
+        pitch: 1.0,
+        rate: 1.0,
+      });
+    } catch (error) {
+      console.error('OpenAI API 호출 오류:', error);
+    }
+
+    setInputText('');
+  };
+
+  const readLastMessage = () => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1].text;
+      Speech.speak(lastMessage, {
+        language: 'en-US',
+        pitch: 1.0,
+        rate: 1.0,
+      });
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+          inverted={false}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="메시지를 입력하세요"
+          />
+          <Button title="전송" onPress={sendMessageToGPT} />
+          <Button title="마지막 메시지 읽기" onPress={readLastMessage} />
+        </KeyboardAvoidingView>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  // ... 스타일 정의 ...
+});
+
+export default ChattingScreen;
+
+
+Exponent.speakingWillSayNextString with no listeners registered라는 문구가 계속 뜨면서 12월 4일 오전 1시 30분경에 작업 중단 후 리디렉션
+

@@ -1,0 +1,227 @@
+import React, { useState, useEffect } from 'react';
+import { View, Button, Text, StyleSheet } from 'react-native';
+import { Speech } from 'expo-speech';
+import * as Voice from 'expo-voice';
+
+const ChattingScreen = () => {
+  const [isListening, setIsListening] = useState(false);
+  const [text, setText] = useState('');
+
+  useEffect(() => {
+    const onSpeechResults = (event) => {
+      setText(event.value[0]);
+    };
+
+    Voice.onSpeechResults = onSpeechResults;
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const startListening = async () => {
+    try {
+      await Voice.start('en-US');
+      setIsListening(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      await Voice.stop();
+      setIsListening(false);
+      // 여기에서 text를 사용하여 GPT-3 등과 통신하거나 다른 액션 수행
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text>{text}</Text>
+      <Button title={isListening ? "Stop Listening" : "Start Listening"} onPress={isListening ? stopListening : startListening} />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+export default ChattingScreen;
+
+
+----오류 발견-----
+// Other imports remain the same
+import * as Speech from 'expo-speech';
+import * as SpeechToText from 'expo-speech-to-text'; // Example import, replace with actual library
+
+const ChattingScreen = () => {
+  // ... existing state variables
+
+  // State for handling voice recognition
+  const [
+
+
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import * as Speech from 'expo-speech';
+import * as Voice from 'expo-voice';
+
+const ChattingScreen = () => {
+  const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+  const API_KEY = 'your-api-key-here'; // Replace with your actual API key
+  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  useEffect(() => {
+    const onSpeechResults = (event) => {
+      const spokenText = event.value[0];
+      setInputText(spokenText);
+    };
+
+    Voice.onSpeechResults = onSpeechResults;
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const sendMessageToGPT = async (text) => {
+    if (!text.trim()) return;
+
+    const userMessage = { text, isUser: true };
+
+    try {
+      const response = await axios.post(
+        OPENAI_API_URL,
+        {
+          prompt: text,
+          max_tokens: 150,
+          temperature: 0.7,
+        },
+        {
+          headers: { 'Authorization': `Bearer ${API_KEY}` },
+        }
+      );
+
+      const botMessage = { text: response.data.choices[0].text.trim(), isUser: false };
+      setMessages((prevMessages) => [...prevMessages, userMessage, botMessage]);
+      Speech.speak(botMessage.text, {
+        language: 'en-US',
+        pitch: 1.0,
+        rate: 1.0,
+      });
+    } catch (error) {
+      console.error('OpenAI API 호출 오류:', error);
+    }
+
+    setInputText('');
+  };
+
+  const startListening = async () => {
+    try {
+      await Voice.start('en-US');
+      setIsListening(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      await Voice.stop();
+      setIsListening(false);
+      sendMessageToGPT(inputText); // Send voice converted text to GPT
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <FlatList
+          style={styles.flatList}
+          data={messages}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={[styles.message, item.isUser ? styles.user : styles.bot]}>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
+          )}
+        />
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="메시지를 입력하세요"
+            onSubmitEditing={() => sendMessageToGPT(inputText)}
+          />
+          <Button title="전송" onPress={() => sendMessageToGPT(inputText)} />
+        </KeyboardAvoidingView>
+        <Button title={isListening ? "Stop Listening" : "Start Listening"} onPress={isListening ? stopListening : startListening} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  flatList: {
+    flex: 1,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+  },
+  message: {
+    padding: 15,
+    margin: 10,
+    borderRadius: 10,
+    maxWidth: '80%',
+  },
+  user: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#007bff',
+  },
+  bot: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#BD53E8',
+  },
+  messageText: {
+    color: '#fff',
+  },
+});
+
+export default ChattingScreen;
+
+
+---- 두번째 오류 발견 -----
+
+해결방법
+expo eject
+npm install react-native-voice --save
+
+import Voice from 'react-native-voice'; 로 교체
+
