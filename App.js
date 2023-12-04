@@ -9,6 +9,7 @@ import ChattingScreen from './screens/ChattingScreen';
 import BMICalculator from './screens/BMICalculator';
 import LiveHealthNavigator from './screens/LiveHealthNavigator';
 import { Image } from 'react-native';
+import {bmi} from './assets/bmi.png'
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -22,12 +23,10 @@ const TabNavigator = () => {
 
           if (route.name === 'Calendar') {
             iconName = focused ? 'calendar' : 'calendar-outline';
-          } else if (route.name === 'Chatting') { // 오타 수정: 'catting' -> 'Chatting'
-            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline'; // 'flask' 아이콘을 'chatbubbles'로 변경
-          } else if (route.name === 'BMI') { // 오타 수정: 'catting' -> 'Chatting'
-            iconName = focused ? 'calculator' : 'calculator-outline'; // 'flask' 아이콘을 'chatbubbles'로 변경
-          } else if (route.name === 'Navigate') { // 오타 수정: 'catting' -> 'Chatting'
-            iconName = focused ? 'navigate' : 'navigate-outline'; // 'flask' 아이콘을 'chatbubbles'로 변경
+          } else if (route.name === 'Chatting') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+          } else if (route.name === 'BMI') {
+            iconName = focused ? 'calculator' : 'calculator-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -39,7 +38,11 @@ const TabNavigator = () => {
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Chatting" component={ChattingScreen} />
       <Tab.Screen name="BMI" component={BMICalculator} />
-      <Tab.Screen name="Navigator" component={LiveHealthNavigator} />
+      <Tab.Screen name="Navigator" component={LiveHealthNavigator} options={{
+            tabBarIcon: ({ color, size }) => (
+              <Image source={require('./assets/map.png')} style={{ width: size, height: size }} />
+            )
+          }}/>
     </Tab.Navigator>
   );
 };

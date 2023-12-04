@@ -8,7 +8,7 @@ import * as Speech from 'expo-speech';
 
 const ChattingScreen = () => {
   const OPENAI_API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
-  const API_KEY = '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';
+  const API_KEY = 'API_KEY';
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState([]);
 
