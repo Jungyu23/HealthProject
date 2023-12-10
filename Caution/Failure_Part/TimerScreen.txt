@@ -1,0 +1,62 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, TextInput } from 'react-native';
+
+const TimerScreen = () => {
+    const [totalSeconds, setTotalSeconds] = useState(0);
+    const [isActive, setIsActive] = useState(false);
+    const [minutes, setMinutes] = useState('0');
+    const [seconds, setSeconds] = useState('0');
+
+    useEffect(() => {
+        let interval = null;
+        if (isActive && totalSeconds > 0) {
+            interval = setInterval(() => {
+                setTotalSeconds(seconds => seconds - 1);
+            }, 1000);
+        } else if (totalSeconds === 0) {
+            clearInterval(interval);
+            setIsActive(false);
+        }
+        return () => clearInterval(interval);
+    }, [isActive, totalSeconds]);
+
+    const startTimer = () => {
+        setTotalSeconds(parseInt(minutes) * 60 + parseInt(seconds));
+        setIsActive(true);
+    };
+
+    const stopTimer = () => {
+        setIsActive(false);
+    };
+
+    const formatTime = () => {
+        let remainingSeconds = totalSeconds;
+        const hours = Math.floor(remainingSeconds / 3600);
+        remainingSeconds %= 3600;
+        const mins = Math.floor(remainingSeconds / 60);
+        const secs = remainingSeconds % 60;
+        return `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
+    return (
+        <View>
+            <TextInput
+                placeholder="Minutes"
+                value={minutes}
+                onChangeText={setMinutes}
+                keyboardType="numeric"
+            />
+            <TextInput
+                placeholder="Seconds"
+                value={seconds}
+                onChangeText={setSeconds}
+                keyboardType="numeric"
+            />
+            <Button onPress={startTimer} title="Start Timer" />
+            <Button onPress={stopTimer} title="Stop Timer" />
+            <Text>{formatTime()}</Text>
+        </View>
+    );
+};
+
+export default TimerScreen;

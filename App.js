@@ -9,7 +9,6 @@ import ChattingScreen from './screens/ChattingScreen';
 import BMICalculator from './screens/BMICalculator';
 import LiveHealthNavigator from './screens/LiveHealthNavigator';
 import { Image } from 'react-native';
-import {bmi} from './assets/bmi.png'
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
